@@ -232,32 +232,40 @@
 
     // 👉 4) Submit to Apps Script endpoint
     form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      setStatus('Submitting…', 'warn');
-      const btn = form.querySelector('button[type="submit"]');
-      btn.disabled = true;
-      const payload = Object.fromEntries(new FormData(form).entries());
+  e.preventDefault();
+  setStatus('Submitting…', 'warn');
+  const btn = form.querySelector('button[type="submit"]');
+  btn.disabled = true;
 
-      try{
-        const res = await fetch(ENDPOINT_SUBMIT,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify(payload)
-        });
-        const json = await res.json().catch(()=>({}));
-        if(res.ok && json && json.ok){
-          setStatus('Submitted ✓', 'ok');
-          form.reset();
-        }else{
-          throw new Error('Submit failed');
-        }
-      }catch(err){
-        console.error(err);
-        setStatus('Error: cannot submit (check endpoint URL / CORS)', 'err');
-      }finally{
-        btn.disabled = false;
-      }
+  const payload = Object.fromEntries(new FormData(form).entries());
+
+  try{
+    const res = await fetch(ENDPOINT_SUBMIT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ✅ เปลี่ยนจาก application/json
+      body: JSON.stringify(payload)
     });
+
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('application/json')) {
+      const text = await res.text();
+      throw new Error('Bad response: ' + text.slice(0,120));
+    }
+
+    const json = await res.json();
+    if (json && json.ok) {
+      setStatus('Submitted ✓', 'ok');
+      form.reset();
+    } else {
+      throw new Error(json.error || 'Submit failed');
+    }
+  }catch(err){
+    console.error('Submit error:', err);
+    setStatus('Error: cannot submit (check endpoint URL / CORS)', 'err');
+  }finally{
+    btn.disabled = false;
+  }
+});
   </script>
 </body>
 </html>
