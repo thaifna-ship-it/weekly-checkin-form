@@ -21,15 +21,14 @@
     textarea{min-height:90px;resize:vertical}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .hint{font-size:.8rem;color:#94a3b8;margin-top:6px}
-    .actions{display:flex;gap:12px}
+    .actions{display:flex;gap:12px;flex-wrap:wrap}
     .btn{cursor:pointer;font-weight:600}
     .primary{background:linear-gradient(90deg,#16a34a,#22c55e);border:0;color:#062d13}
     .ghost{background:#0b1220;border-color:#263143}
-    .status{margin-top:10px}
+    .status{display:block;margin-top:8px}
     .ok{color:var(--acc)}
     .warn{color:var(--warn)}
     .err{color:var(--err)}
-    .footer{margin-top:20px;color:#94a3b8;font-size:.85rem}
     .checkboxes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
     .checkboxes label{display:flex;align-items:center;gap:8px;margin:0}
     .checkboxes input[type="checkbox"], .checkline input[type="checkbox"]{width:auto}
@@ -50,21 +49,196 @@
           <option value="monthly">Monthly</option>
         </select>
       </div>
-        <select id="modeSel" class="modeSel">
-          <option value="weekly" selected>Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
-        <span id="status" class="status"></span>
-      </div>
 
       <!-- WEEKLY FORM -->
-      $1
-          <span id="statusW" class="status"></span>$2</div>
+      <form id="formWeekly" class="full" autocomplete="off">
+        <div class="full">
+          <label>Weekly</label>
+          <div class="hint">ฟอร์มรายสัปดาห์</div>
+        </div>
+
+        <div>
+          <label>Memo Date</label>
+          <input type="date" name="memoDate" required />
+        </div>
+        <div>
+          <label>Staff</label>
+          <input name="staff" list="staffList" placeholder="พิมพ์ชื่อพนักงาน" required />
+          <datalist id="staffList">
+            <option value="Wim"></option>
+            <option value="Cream"></option>
+            <option value="Fern"></option>
+            <option value="Tham"></option>
+          </datalist>
+        </div>
+
+        <div class="full">
+          <label>Company</label>
+          <input name="company" list="companyListW" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
+          <datalist id="companyListW"></datalist>
+          <div class="hint">รายชื่อบริษัทจะโหลดจาก Google Sheet (CustomerList)</div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Relationship (0–5)</label>
+            <select name="relationship" required>
+              <option value="" disabled selected>เลือกคะแนน</option>
+              <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            </select>
+            <div class="hint">0 = no contact • 5 = strong & cooperative</div>
+          </div>
+          <div>
+            <label>Proactiveness (0–5)</label>
+            <select name="proactiveness" required>
+              <option value="" disabled selected>เลือกคะแนน</option>
+              <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            </select>
+            <div class="hint">0 = none • 5 = very proactive</div>
+          </div>
+        </div>
+
+        <div class="full">
+          <label>Key Activity This Week</label>
+          <textarea name="keyActivity" placeholder="เช่น ส่งบทความให้อนุมัติ / อัปโหลดสินค้า / โทรติดตาม"></textarea>
+        </div>
+
+        <div>
+          <label>Client Feedback</label>
+          <textarea name="clientFeedback" placeholder="เช่น ลูกค้าขอปรับคีย์เวิร์ด / ยังไม่ตอบกลับ"></textarea>
+        </div>
+        <div>
+          <label>Next Action</label>
+          <textarea name="nextAction" placeholder="สัปดาห์หน้าจะทำอะไรต่อ"></textarea>
+        </div>
+
+        <div>
+          <label>Summary Status</label>
+          <select name="summary" required>
+            <option value="" disabled selected>เลือกสถานะ</option>
+            <option value="Active">✅ Active</option>
+            <option value="Follow-up">⚠️ Need Follow-up</option>
+            <option value="No Response">❌ No Response</option>
+          </select>
+        </div>
+        <div>
+          <label>Memo / Note</label>
+          <input name="memo" placeholder="บันทึกสั้น ๆ เพิ่มเติม (ถ้ามี)" />
+        </div>
+
+        <div class="full actions">
+          <button type="submit" class="btn primary">Submit Weekly</button>
+          <button type="button" id="saveDraftW" class="btn ghost">Save Draft (local)</button>
+          <span id="statusW" class="status"></span>
+        </div>
       </form>
 
       <!-- MONTHLY FORM -->
-      $1
-          <span id="statusM" class="status"></span>$2</div>
+      <form id="formMonthly" class="full" autocomplete="off" hidden>
+        <div>
+          <label>Month (YYYY-MM)</label>
+          <input type="month" name="ym" required />
+          <div class="hint">เลือกเดือนของรายงาน เช่น <code>2025-10</code> (หนึ่งบริษัทต่อหนึ่งรายงานต่อเดือน)</div>
+        </div>
+        <div>
+          <label>Staff</label>
+          <input name="staff" list="staffList" placeholder="พิมพ์ชื่อพนักงาน" required />
+          <div class="hint">ผู้รับผิดชอบหลักของลูกค้าในเดือนนี้</div>
+        </div>
+
+        <div class="full">
+          <label>Company</label>
+          <input name="company" list="companyListM" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
+          <datalist id="companyListM"></datalist>
+          <div class="hint">เลือกบริษัทที่ต้องการสรุปรายเดือน (โหลดจากชีท CustomerList)</div>
+        </div>
+
+        <div>
+          <label>Relationship (0–5) [Monthly]</label>
+          <select name="relationshipMonthly" required>
+            <option value="" disabled selected>เลือกคะแนน</option>
+            <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+          <div class="hint">0 = แทบไม่ตอบกลับ • 5 = สัมพันธ์ดีมาก</div>
+        </div>
+        <div>
+          <label>Proactiveness (0–5) [Monthly]</label>
+          <select name="proactivenessMonthly" required>
+            <option value="" disabled selected>เลือกคะแนน</option>
+            <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+          <div class="hint">0 = ไม่ขยับงาน • 5 = เชิงรุกมาก</div>
+        </div>
+
+        <div class="full">
+          <label>Listing Completeness <small>(สินค้าที่ลงบนเว็บไซต์ครบถ้วนหรือไม่ หรือ ขาดการลงไปมากกว่า 2 เดือน)</small></label>
+          <select name="listingCompleteness" required>
+            <option value="" disabled selected>เลือกสถานะ</option>
+            <option>Complete</option>
+            <option>Minor Gap (&lt;2 months)</option>
+            <option>Major Gap (≥2 months)</option>
+          </select>
+          <div class="hint">Complete = ครบ • Minor Gap = ตกค้างเล็กน้อย • Major Gap = ขาด ≥ 2 เดือน</div>
+        </div>
+
+        <div>
+          <label>Knowledge Content Status</label>
+          <select name="knowledgeStatus" required>
+            <option value="" disabled selected>เลือกสถานะ</option>
+            <option>On Target</option>
+            <option>Behind (Client Approval Delay)</option>
+            <option>Behind (Internal)</option>
+            <option>Not Planned</option>
+          </select>
+          <div class="hint">สถานะบทความ/ความรู้ในเดือนนี้</div>
+        </div>
+        <div>
+          <label>Knowledge Pieces Done</label>
+          <input type="number" name="knowledgePieces" min="0" step="1" value="0" />
+          <div class="hint">จำนวนชิ้นงานที่เสร็จและเผยแพร่</div>
+        </div>
+        <div class="full">
+          <label>Knowledge Notes</label>
+          <textarea name="knowledgeNotes" placeholder="บันทึก/เหตุผล เช่น รออนุมัติจากลูกค้า"></textarea>
+        </div>
+
+        <div class="full">
+          <label>Other Ads Service (เลือกได้หลายข้อ)</label>
+          <div class="hint">เลือกบริการเสริมที่ทำในเดือนนี้ เช่น Facebook, Google Ads, Email</div>
+          <div class="checkboxes" id="adsGroup">
+            <label><input type="checkbox" value="Content Email"> Content Email</label>
+            <label><input type="checkbox" value="Facebook"> Facebook</label>
+            <label><input type="checkbox" value="Google Ads"> Google Ads</label>
+            <label><input type="checkbox" value="Line OA"> Line OA</label>
+            <label><input type="checkbox" value="Shopee/Lazada Boost"> Shopee/Lazada Boost</label>
+            <label><input type="checkbox" value="Other" id="adsOtherChk"> Other</label>
+          </div>
+          <input id="adsOtherText" placeholder="ระบุ Other (ถ้าเลือก)" style="margin-top:8px;display:none" />
+        </div>
+
+        <div class="full">
+          <label>Inquiry / Download</label>
+          <div class="checkline">
+            <input type="checkbox" id="inquiryDownloadChk" />
+            <span>มี Inquiry/Download ในเดือนนี้</span>
+          </div>
+          <div class="hint">ติ๊กถ้ามีการติดต่อสอบถามหรือดาวน์โหลดแคตตาล็อกในเดือนนี้</div>
+        </div>
+
+        <div class="full">
+          <label>Monthly Memo</label>
+          <textarea name="monthlyMemo" placeholder="สรุปภาพรวม/ไฮไลต์/ปัญหาหลักของเดือนนี้"></textarea>
+        </div>
+        <div class="full">
+          <label>Next Action (Next Month)</label>
+          <input name="nextActionNextMonth" placeholder="ภารกิจสำคัญเดือนถัดไป • เจ้าของงาน • เส้นตายโดยประมาณ" />
+        </div>
+
+        <div class="full actions">
+          <button type="submit" class="btn primary">Submit Monthly</button>
+          <button type="button" id="saveDraftM" class="btn ghost">Save Draft (local)</button>
+          <span id="statusM" class="status"></span>
+        </div>
       </form>
 
       <div class="footer">
@@ -84,9 +258,14 @@
     const formW     = document.getElementById('formWeekly');
     const formM     = document.getElementById('formMonthly');
     const companyListW = document.getElementById('companyListW');
-    c
+    const companyListM = document.getElementById('companyListM');
+    const adsOtherChk = document.getElementById('adsOtherChk');
+    const adsOtherText = document.getElementById('adsOtherText');
+    const inquiryDownloadChk = document.getElementById('inquiryDownloadChk');
+    const statusW = document.getElementById('statusW');
+    const statusM = document.getElementById('statusM');
 
-    function setStatus(msg, cls){ statusEl.textContent = msg; statusEl.className = 'status ' + (cls||''); }
+    function setStatus(el, msg, cls){ if(!el) return; el.textContent = msg || ''; el.className = 'status ' + (cls||''); }
 
     // Toggle Other text input
     adsOtherChk?.addEventListener('change', ()=>{
@@ -101,7 +280,7 @@
       const isMonthly = m === 'monthly';
       formM.hidden = !isMonthly;
       formW.hidden = isMonthly;
-      setStatus('', '');
+      setStatus(statusW,'',''); setStatus(statusM,'','');
     });
 
     // Init Month default + load companies + drafts
@@ -130,8 +309,12 @@
         const names = Array.isArray(json.names) ? [...new Set(json.names)].sort((a,b)=>a.localeCompare(b)) : [];
         localStorage.setItem(CACHE_KEY, JSON.stringify(names));
         renderCompanyOptions(names, true);
-        setStatus('Loaded company list ✓','ok');
-      }catch(err){ console.error('loadCompanies failed:', err); setStatus('Warning: cannot load company list (cache used)','warn'); }
+        setStatus(statusW,'Loaded company list ✓','ok'); setStatus(statusM,'Loaded company list ✓','ok');
+      }catch(err){
+        console.error('loadCompanies failed:', err);
+        setStatus(statusW,'Warning: cannot load company list (cache used)','warn');
+        setStatus(statusM,'Warning: cannot load company list (cache used)','warn');
+      }
     }
     function renderCompanyOptions(names, clear){
       if (clear){ companyListW.innerHTML = ''; companyListM.innerHTML=''; }
@@ -148,7 +331,7 @@
     document.getElementById('saveDraftW').addEventListener('click', ()=>{
       const data = Object.fromEntries(new FormData(formW).entries());
       localStorage.setItem('weekly-checkin-draft', JSON.stringify(data));
-      setStatus('Weekly draft saved ✓','ok');
+      setStatus(statusW,'Weekly draft saved ✓','ok');
     });
     document.getElementById('saveDraftM').addEventListener('click', ()=>{
       const data = Object.fromEntries(new FormData(formM).entries());
@@ -156,7 +339,7 @@
       data.adsServices = getSelectedAds();
       data.adsOtherText = adsOtherText.value || '';
       localStorage.setItem('monthly-report-draft-v1', JSON.stringify(data));
-      setStatus('Monthly draft saved ✓','ok');
+      setStatus(statusM,'Monthly draft saved ✓','ok');
     });
     function loadDrafts(){
       const rw = localStorage.getItem('weekly-checkin-draft');
@@ -189,17 +372,17 @@
     }
 
     formW.addEventListener('submit', async (e)=>{
-      e.preventDefault(); setStatus('Submitting weekly…','warn');
+      e.preventDefault(); setStatus(statusW,'Submitting…','warn');
       const btn = formW.querySelector('button[type="submit"]'); btn.disabled = true;
       const payload = Object.fromEntries(new FormData(formW).entries());
       payload.mode = 'weekly';
-      try{ await postJsonSimple(ENDPOINT_SUBMIT, payload); setStatus('Weekly submitted ✓','ok'); formW.reset(); }
-      catch(err){ console.error(err); setStatus('Error (weekly): '+err.message,'err'); }
+      try{ await postJsonSimple(ENDPOINT_SUBMIT, payload); setStatus(statusW,'Submitted ✓','ok'); formW.reset(); }
+      catch(err){ console.error(err); setStatus(statusW,'Error: '+err.message,'err'); }
       finally{ btn.disabled=false; }
     });
 
     formM.addEventListener('submit', async (e)=>{
-      e.preventDefault(); setStatus('Submitting monthly…','warn');
+      e.preventDefault(); setStatus(statusM,'Submitting…','warn');
       const btn = formM.querySelector('button[type="submit"]'); btn.disabled = true;
       const data = Object.fromEntries(new FormData(formM).entries());
       const payload = {
@@ -218,9 +401,13 @@
         monthlyMemo: data.monthlyMemo||'',
         nextActionNextMonth: data.nextActionNextMonth||''
       };
-      try{ await postJsonSimple(ENDPOINT_SUBMIT, payload); setStatus('Monthly submitted ✓','ok'); formM.reset();
-        const d=new Date(); formM.ym.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0'); adsOtherText.style.display='none';}
-      catch(err){ console.error(err); setStatus('Error (monthly): '+err.message,'err'); }
+      try{
+        await postJsonSimple(ENDPOINT_SUBMIT, payload);
+        setStatus(statusM,'Submitted ✓','ok');
+        formM.reset();
+        const d=new Date(); formM.ym.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0');
+        adsOtherText.style.display='none';
+      }catch(err){ console.error(err); setStatus(statusM,'Error: '+err.message,'err'); }
       finally{ btn.disabled=false; }
     });
   </script>
