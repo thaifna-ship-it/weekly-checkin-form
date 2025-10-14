@@ -3,14 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Weekly Customer Check-in Form</title>
+  <title>Customer Check-in • Weekly & Monthly</title>
   <style>
     :root{--bg:#0f172a;--card:#111827;--muted:#334155;--border:#1f2937;--fg:#e5e7eb;--acc:#22c55e;--warn:#f59e0b;--err:#ef4444}
-    html,body{background:#0b1220;color:var(--fg);font-family: ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";}
+    html,body{background:#0b1220;color:var(--fg);font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial}
     .wrap{max-width:980px;margin:40px auto;padding:24px}
-    .card{background:linear-gradient(180deg,#0f172a,#0b1220);border:1px solid var(--border);border-radius:18px;padding:24px;box-shadow: 0 10px 30px #00000030}
-    h1{font-size:1.6rem;margin:0 0 12px}
-    p.desc{color:#94a3b8;margin:0 0 18px}
+    .card{background:linear-gradient(180deg,#0f172a,#0b1220);border:1px solid var(--border);border-radius:18px;padding:24px;box-shadow:0 10px 30px #0003}
+    h1{font-size:1.6rem;margin:0 0 8px}
+    p.desc{color:#94a3b8;margin:0 0 14px}
+    .toprow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--border);color:#9ca3af}
+    .modeSel{background:#0b1220;border:1px solid var(--border);color:var(--fg);padding:10px;border-radius:10px}
     form{display:grid;grid-template-columns:1fr 1fr;gap:16px}
     .full{grid-column:1/-1}
     label{display:block;font-size:.9rem;margin-bottom:6px;color:#cbd5e1}
@@ -22,61 +25,35 @@
     .btn{cursor:pointer;font-weight:600}
     .primary{background:linear-gradient(90deg,#16a34a,#22c55e);border:0;color:#062d13}
     .ghost{background:#0b1220;border-color:#263143}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid var(--border);color:#9ca3af}
     .status{margin-top:10px}
     .ok{color:var(--acc)}
     .warn{color:var(--warn)}
     .err{color:var(--err)}
     .footer{margin-top:20px;color:#94a3b8;font-size:.85rem}
+    .checkboxes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .checkboxes label{display:flex;align-items:center;gap:8px;margin:0}
+    .checkboxes input[type="checkbox"], .checkline input[type="checkbox"]{width:auto}
+    .checkline{display:flex;align-items:center;gap:8px;justify-content:flex-start;margin-top:4px}
+    [hidden]{display:none !important}
   </style>
-  <!--
-  🔧 GOOGLE APPS SCRIPT ENDPOINTS
-
-  // 1) Web App to RECEIVE submissions (POST)
-  function doPost(e){
-    const sheet = SpreadsheetApp.openById('PUT_SHEET_ID_HERE').getSheetByName('Responses');
-    const data = JSON.parse(e.postData.contents);
-    const values = [
-      new Date(), // server timestamp
-      data.memoDate,
-      data.staff,
-      data.company,
-      Number(data.relationship),
-      Number(data.proactiveness),
-      data.keyActivity || '',
-      data.clientFeedback || '',
-      data.nextAction || '',
-      data.summary || '',
-      data.memo || ''
-    ];
-    sheet.appendRow(values);
-    return ContentService.createTextOutput(JSON.stringify({ok:true}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-
-  // 2) Web App to LIST companies (GET)
-  //    Create a sheet named "CustomerList" with company names in column A (header in A1, data from A2)
-  function doGet(e){
-    const sheet = SpreadsheetApp.openById('PUT_SHEET_ID_HERE').getSheetByName('CustomerList');
-    const values = sheet.getRange(2,1,sheet.getLastRow()-1,1).getValues()
-      .map(r => (r[0]||'').toString().trim())
-      .filter(v => v.length>0);
-    return ContentService.createTextOutput(JSON.stringify({names: values}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-
-  // Deploy each as a Web App (or one project handling both) and paste URLs below.
-  -->
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Weekly Customer Check-in</h1>
-      <p class="desc">กรอกสรุปรายสัปดาห์แบบสั้น ๆ ใช้เวลาไม่ถึง 2 นาทีต่อบริษัท • มีช่อง <em>Memo</em> และ <em>Memo Date</em> ครบ</p>
+      <h1>Customer Check-in</h1>
+      <p class="desc">กรอกสรุปความคืบหน้าของลูกค้า • เลือกโหมด Weekly / Monthly จากเมนูด้านล่าง</p>
 
-      <div class="pill">🧭 Mode: Weekly • ⏱️ Fast input</div>
+      <div class="toprow">
+        <div class="pill">🧭 Mode: <b id="modeBadge">Weekly</b></div>
+        <select id="modeSel" class="modeSel">
+          <option value="weekly" selected>Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+        <span id="status" class="status"></span>
+      </div>
 
-      <form id="checkinForm" class="full" autocomplete="off">
+      <!-- WEEKLY FORM -->
+      <form id="formWeekly" class="full" autocomplete="off">
         <div>
           <label>Memo Date</label>
           <input type="date" name="memoDate" required />
@@ -94,8 +71,8 @@
 
         <div class="full">
           <label>Company</label>
-          <input name="company" list="companyList" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
-          <datalist id="companyList"></datalist>
+          <input name="company" list="companyListW" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
+          <datalist id="companyListW"></datalist>
           <div class="hint">รายชื่อบริษัทจะโหลดจาก Google Sheet (CustomerList)</div>
         </div>
 
@@ -147,129 +124,278 @@
         </div>
 
         <div class="full actions">
-          <button type="submit" class="btn primary">Submit</button>
-          <button type="button" id="saveDraft" class="btn ghost">Save Draft (local)</button>
-          <span id="status" class="status"></span>
+          <button type="submit" class="btn primary">Submit Weekly</button>
+          <button type="button" id="saveDraftW" class="btn ghost">Save Draft (local)</button>
+        </div>
+      </form>
+
+      <!-- MONTHLY FORM -->
+      <form id="formMonthly" class="full" autocomplete="off" hidden>
+        <div>
+          <label>Month (YYYY-MM)</label>
+          <input type="month" name="ym" required />
+          <div class="hint">เลือกเดือนของรายงาน เช่น <code>2025-10</code> (หนึ่งบริษัทต่อหนึ่งรายงานต่อเดือน)</div>
+        </div>
+        <div>
+          <label>Staff</label>
+          <input name="staff" list="staffList" placeholder="พิมพ์ชื่อพนักงาน" required />
+          <div class="hint">ผู้รับผิดชอบหลักของลูกค้าในเดือนนี้</div>
+        </div>
+
+        <div class="full">
+          <label>Company</label>
+          <input name="company" list="companyListM" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
+          <datalist id="companyListM"></datalist>
+          <div class="hint">เลือกบริษัทที่ต้องการสรุปรายเดือน (โหลดจากชีท CustomerList)</div>
+        </div>
+
+        <div>
+          <label>Relationship (0–5) [Monthly]</label>
+          <select name="relationshipMonthly" required>
+            <option value="" disabled selected>เลือกคะแนน</option>
+            <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+          <div class="hint">0 = แทบไม่ตอบกลับ • 5 = สัมพันธ์ดีมาก</div>
+        </div>
+        <div>
+          <label>Proactiveness (0–5) [Monthly]</label>
+          <select name="proactivenessMonthly" required>
+            <option value="" disabled selected>เลือกคะแนน</option>
+            <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+          <div class="hint">0 = ไม่ขยับงาน • 5 = เชิงรุกมาก</div>
+        </div>
+
+        <div class="full">
+          <label>Listing Completeness <small>(สินค้าที่ลงบนเว็บไซต์ครบถ้วนหรือไม่ หรือ ขาดการลงไปมากกว่า 2 เดือน)</small></label>
+          <select name="listingCompleteness" required>
+            <option value="" disabled selected>เลือกสถานะ</option>
+            <option>Complete</option>
+            <option>Minor Gap (<2 months)</option>
+            <option>Major Gap (≥2 months)</option>
+          </select>
+          <div class="hint">Complete = ครบ • Minor Gap = ตกค้างเล็กน้อย • Major Gap = ขาด ≥ 2 เดือน</div>
+        </div>
+
+        <div>
+          <label>Knowledge Content Status</label>
+          <select name="knowledgeStatus" required>
+            <option value="" disabled selected>เลือกสถานะ</option>
+            <option>On Target</option>
+            <option>Behind (Client Approval Delay)</option>
+            <option>Behind (Internal)</option>
+            <option>Not Planned</option>
+          </select>
+          <div class="hint">สถานะบทความ/ความรู้ในเดือนนี้</div>
+        </div>
+        <div>
+          <label>Knowledge Pieces Done</label>
+          <input type="number" name="knowledgePieces" min="0" step="1" value="0" />
+          <div class="hint">จำนวนชิ้นงานที่เสร็จและเผยแพร่</div>
+        </div>
+        <div class="full">
+          <label>Knowledge Notes</label>
+          <textarea name="knowledgeNotes" placeholder="บันทึก/เหตุผล เช่น รออนุมัติจากลูกค้า"></textarea>
+        </div>
+
+        <div class="full">
+          <label>Other Ads Service (เลือกได้หลายข้อ)</label>
+          <div class="hint">เลือกบริการเสริมที่ทำในเดือนนี้ เช่น Facebook, Google Ads, Email</div>
+          <div class="checkboxes" id="adsGroup">
+            <label><input type="checkbox" value="Content Email"> Content Email</label>
+            <label><input type="checkbox" value="Facebook"> Facebook</label>
+            <label><input type="checkbox" value="Google Ads"> Google Ads</label>
+            <label><input type="checkbox" value="Line OA"> Line OA</label>
+            <label><input type="checkbox" value="Shopee/Lazada Boost"> Shopee/Lazada Boost</label>
+            <label><input type="checkbox" value="Other" id="adsOtherChk"> Other</label>
+          </div>
+          <input id="adsOtherText" placeholder="ระบุ Other (ถ้าเลือก)" style="margin-top:8px;display:none" />
+        </div>
+
+        <div class="full">
+          <label>Inquiry / Download</label>
+          <div class="checkline">
+            <input type="checkbox" id="inquiryDownloadChk" />
+            <span>มี Inquiry/Download ในเดือนนี้</span>
+          </div>
+          <div class="hint">ติ๊กถ้ามีการติดต่อสอบถามหรือดาวน์โหลดแคตตาล็อกในเดือนนี้</div>
+        </div>
+
+        <div class="full">
+          <label>Monthly Memo</label>
+          <textarea name="monthlyMemo" placeholder="สรุปภาพรวม/ไฮไลต์/ปัญหาหลักของเดือนนี้"></textarea>
+        </div>
+        <div class="full">
+          <label>Next Action (Next Month)</label>
+          <input name="nextActionNextMonth" placeholder="ภารกิจสำคัญเดือนถัดไป • เจ้าของงาน • เส้นตายโดยประมาณ" />
+        </div>
+
+        <div class="full actions">
+          <button type="submit" class="btn primary">Submit Monthly</button>
+          <button type="button" id="saveDraftM" class="btn ghost">Save Draft (local)</button>
         </div>
       </form>
 
       <div class="footer">
-        ตั้งค่า URL ปลายทางในตัวแปร <code>ENDPOINT_SUBMIT</code> และ <code>ENDPOINT_LIST</code> • รายชื่อบริษัทอ่านจากชีท <b>CustomerList</b>
+        ตั้งค่า URL ในตัวแปร <code>ENDPOINT_SUBMIT</code> และ <code>ENDPOINT_LIST</code> ด้านล่าง • รายชื่อบริษัทอ่านจากชีท <b>CustomerList</b>
       </div>
     </div>
   </div>
 
   <script>
-    // 👉 1) ใส่ URL Web App ของ Google Apps Script
-    const ENDPOINT_SUBMIT = "https://script.google.com/macros/s/AKfycbxw7SrqM5V8mcqQWFxGSHh9dFgu1hILFqzwv9fQW59w5Y6fOcThPTgL6IkF3QCOmiaR/exec"; // doPost
-    const ENDPOINT_LIST   = "https://script.google.com/macros/s/AKfycbxw7SrqM5V8mcqQWFxGSHh9dFgu1hILFqzwv9fQW59w5Y6fOcThPTgL6IkF3QCOmiaR/exec";   // doGet (returns {names:[]})
+    // 👉 ENDPOINT ของ Apps Script (Web App /exec)
+    const ENDPOINT_SUBMIT = "PUT_YOUR_EXEC_URL_HERE"; // doPost
+    const ENDPOINT_LIST   = "PUT_YOUR_EXEC_URL_HERE"; // doGet (returns {names:[]})
 
-    const form = document.getElementById('checkinForm');
-    const statusEl = document.getElementById('status');
-    const companyList = document.getElementById('companyList');
+    // Elements
+    const modeSel   = document.getElementById('modeSel');
+    const modeBadge = document.getElementById('modeBadge');
+    const formW     = document.getElementById('formWeekly');
+    const formM     = document.getElementById('formMonthly');
+    const statusEl  = document.getElementById('status');
+    const companyListW = document.getElementById('companyListW');
+    const companyListM = document.getElementById('companyListM');
+    const adsOtherChk = document.getElementById('adsOtherChk');
+    const adsOtherText = document.getElementById('adsOtherText');
+    const inquiryDownloadChk = document.getElementById('inquiryDownloadChk');
 
-    function setStatus(msg, cls){
-      statusEl.textContent = msg;
-      statusEl.className = 'status ' + (cls||'');
-    }
+    function setStatus(msg, cls){ statusEl.textContent = msg; statusEl.className = 'status ' + (cls||''); }
 
-    // 👉 2) Load company list from Google Sheet (with local cache)
-    const CACHE_KEY = 'company-names-cache-v1';
-    async function loadCompanies(){
-      // try cache first
-      const cached = localStorage.getItem(CACHE_KEY);
-      if(cached){
-        try{
-          const names = JSON.parse(cached);
-          renderCompanyOptions(names);
-        }catch(_){/* ignore */}
-      }
-      try{
-        const res = await fetch(ENDPOINT_LIST, {method:'GET'});
-        const json = await res.json();
-        if(Array.isArray(json.names)){
-          const names = [...new Set(json.names)].sort((a,b)=>a.localeCompare(b));
-          localStorage.setItem(CACHE_KEY, JSON.stringify(names));
-          renderCompanyOptions(names, true);
-          setStatus('Loaded company list ✓', 'ok');
-        }else{
-          throw new Error('Invalid list payload');
-        }
-      }catch(err){
-        console.error(err);
-        setStatus('Warning: cannot load company list (using cache if any)', 'warn');
-      }
-    }
-
-    function renderCompanyOptions(names, clear){
-      if(clear) companyList.innerHTML = '';
-      // if no options yet, append all
-      if(companyList.children.length === 0){
-        const frag = document.createDocumentFragment();
-        names.forEach(n => {
-          const op = document.createElement('option');
-          op.value = n;
-          frag.appendChild(op);
-        });
-        companyList.appendChild(frag);
-      }
-    }
-
-    // 👉 3) Save draft to localStorage (optional)
-    const DRAFT_KEY = 'weekly-checkin-draft';
-    document.getElementById('saveDraft').addEventListener('click', ()=>{
-      const data = Object.fromEntries(new FormData(form).entries());
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
-      setStatus('Draft saved locally ✓', 'ok');
+    // Toggle Other text input
+    adsOtherChk?.addEventListener('change', ()=>{
+      adsOtherText.style.display = adsOtherChk.checked ? 'block' : 'none';
+      if (!adsOtherChk.checked) adsOtherText.value = '';
     });
+
+    // Mode switch
+    modeSel.addEventListener('change', ()=>{
+      const m = modeSel.value;
+      modeBadge.textContent = m.charAt(0).toUpperCase() + m.slice(1);
+      const isMonthly = m === 'monthly';
+      formM.hidden = !isMonthly;
+      formW.hidden = isMonthly;
+      setStatus('', '');
+    });
+
+    // Init Month default + load companies + drafts
     window.addEventListener('load', ()=>{
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if(raw){
-        try{ const data = JSON.parse(raw); for(const k in data){ if(form[k]) form[k].value = data[k]; } }catch(e){}
+      const ymInput = formM.elements['ym'];
+      if (ymInput && !ymInput.value) {
+        const d = new Date();
+        ymInput.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
       }
       loadCompanies();
+      loadDrafts();
     });
 
-   // 👉 4) Submit to Apps Script endpoint (debug friendly)
-form.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  setStatus('Submitting…', 'warn');
-  const btn = form.querySelector('button[type="submit"]');
-  btn.disabled = true;
-
-  const payload = Object.fromEntries(new FormData(form).entries());
-
-  try{
-    const res = await fetch(ENDPOINT_SUBMIT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simple request
-      body: JSON.stringify(payload)
-    });
-
-    const ct = res.headers.get('content-type') || '';
-    const statusInfo = `HTTP ${res.status} • CT=${ct}`;
-
-    // พยายามอ่าน JSON ก่อน ถ้าไม่ใช่ค่อยอ่านเป็น text
-    if (ct.includes('application/json')) {
-      const json = await res.json();
-      if (res.ok && json && json.ok) {
-        setStatus('Submitted ✓', 'ok');
-        form.reset();
-      } else {
-        const msg = json && (json.error || JSON.stringify(json));
-        setStatus(`Server error: ${msg} (${statusInfo})`, 'err');
+    // Load company list (cache)
+    const CACHE_KEY = 'company-names-cache-v1';
+    async function loadCompanies(){
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        try { const names = JSON.parse(cached); renderCompanyOptions(names); } catch(_){}
       }
-    } else {
-      const text = await res.text();
-      setStatus(`Non-JSON response: ${text.slice(0,180)}… (${statusInfo})`, 'err');
+      try{
+        const res = await fetch(ENDPOINT_LIST + '?t=' + Date.now(), { method:'GET' });
+        const ct = res.headers.get('content-type')||'';
+        if(!res.ok || !ct.includes('application/json')){ const text = await res.text(); throw new Error(`Bad response: ${res.status} ${ct} ${text.slice(0,120)}`); }
+        const json = await res.json();
+        const names = Array.isArray(json.names) ? [...new Set(json.names)].sort((a,b)=>a.localeCompare(b)) : [];
+        localStorage.setItem(CACHE_KEY, JSON.stringify(names));
+        renderCompanyOptions(names, true);
+        setStatus('Loaded company list ✓','ok');
+      }catch(err){ console.error('loadCompanies failed:', err); setStatus('Warning: cannot load company list (cache used)','warn'); }
     }
-  }catch(err){
-    setStatus(`Network error: ${err.message}`, 'err');
-    console.error('Submit error:', err);
-  }finally{
-    btn.disabled = false;
-  }
-});
+    function renderCompanyOptions(names, clear){
+      if (clear){ companyListW.innerHTML = ''; companyListM.innerHTML=''; }
+      if (companyListW.children.length===0){
+        const fragW = document.createDocumentFragment();
+        const fragM = document.createDocumentFragment();
+        names.forEach(n=>{ const opW=document.createElement('option'); opW.value=n; fragW.appendChild(opW);
+                           const opM=document.createElement('option'); opM.value=n; fragM.appendChild(opM); });
+        companyListW.appendChild(fragW); companyListM.appendChild(fragM);
+      }
+    }
+
+    // Drafts
+    document.getElementById('saveDraftW').addEventListener('click', ()=>{
+      const data = Object.fromEntries(new FormData(formW).entries());
+      localStorage.setItem('weekly-checkin-draft', JSON.stringify(data));
+      setStatus('Weekly draft saved ✓','ok');
+    });
+    document.getElementById('saveDraftM').addEventListener('click', ()=>{
+      const data = Object.fromEntries(new FormData(formM).entries());
+      data.inquiryDownload = inquiryDownloadChk.checked;
+      data.adsServices = getSelectedAds();
+      data.adsOtherText = adsOtherText.value || '';
+      localStorage.setItem('monthly-report-draft-v1', JSON.stringify(data));
+      setStatus('Monthly draft saved ✓','ok');
+    });
+    function loadDrafts(){
+      const rw = localStorage.getItem('weekly-checkin-draft');
+      if (rw) { try{ const d=JSON.parse(rw); for(const k in d){ if(formW[k]) formW[k].value=d[k]; } }catch(_){} }
+      const rm = localStorage.getItem('monthly-report-draft-v1');
+      if (rm) { try{ const d=JSON.parse(rm); for(const k in d){ if(formM[k] && typeof d[k]==='string') formM[k].value=d[k]; }
+        inquiryDownloadChk.checked = !!d.inquiryDownload;
+        if (Array.isArray(d.adsServices)){
+          const checks = document.querySelectorAll('#adsGroup input[type="checkbox"]');
+          checks.forEach(ch=> ch.checked = d.adsServices.includes(ch.value));
+        }
+        if (d.adsOtherText){ adsOtherChk.checked=true; adsOtherText.style.display='block'; adsOtherText.value=d.adsOtherText; }
+      }catch(_){} }
+    }
+
+    function getSelectedAds(){
+      const checks = document.querySelectorAll('#adsGroup input[type="checkbox"]');
+      const list=[]; checks.forEach(ch=>{ if(ch.checked) list.push(ch.value); });
+      return list;
+    }
+
+    // Submit helpers (simple request: text/plain)
+    async function postJsonSimple(url, payload){
+      const res = await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+      const ct = res.headers.get('content-type')||'';
+      if (!res.ok || !ct.includes('application/json')){ const text = await res.text(); throw new Error(`Bad response: ${res.status} ${ct} ${text.slice(0,160)}`); }
+      const json = await res.json();
+      if (!json || !json.ok) throw new Error(json && json.error ? json.error : 'Server rejected');
+      return json;
+    }
+
+    formW.addEventListener('submit', async (e)=>{
+      e.preventDefault(); setStatus('Submitting weekly…','warn');
+      const btn = formW.querySelector('button[type="submit"]'); btn.disabled = true;
+      const payload = Object.fromEntries(new FormData(formW).entries());
+      payload.mode = 'weekly';
+      try{ await postJsonSimple(ENDPOINT_SUBMIT, payload); setStatus('Weekly submitted ✓','ok'); formW.reset(); }
+      catch(err){ console.error(err); setStatus('Error (weekly): '+err.message,'err'); }
+      finally{ btn.disabled=false; }
+    });
+
+    formM.addEventListener('submit', async (e)=>{
+      e.preventDefault(); setStatus('Submitting monthly…','warn');
+      const btn = formM.querySelector('button[type="submit"]'); btn.disabled = true;
+      const data = Object.fromEntries(new FormData(formM).entries());
+      const payload = {
+        mode: 'monthly',
+        ym: data.ym?.trim(),
+        staff: data.staff?.trim(),
+        company: data.company?.trim(),
+        relationshipMonthly: Number(data.relationshipMonthly||0),
+        proactivenessMonthly: Number(data.proactivenessMonthly||0),
+        listingCompleteness: data.listingCompleteness,
+        knowledgeStatus: data.knowledgeStatus,
+        knowledgePieces: Number(data.knowledgePieces||0),
+        knowledgeNotes: data.knowledgeNotes||'',
+        adsServices: getSelectedAds(),
+        inquiryDownload: !!inquiryDownloadChk.checked,
+        monthlyMemo: data.monthlyMemo||'',
+        nextActionNextMonth: data.nextActionNextMonth||''
+      };
+      try{ await postJsonSimple(ENDPOINT_SUBMIT, payload); setStatus('Monthly submitted ✓','ok'); formM.reset();
+        const d=new Date(); formM.ym.value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0'); adsOtherText.style.display='none';}
+      catch(err){ console.error(err); setStatus('Error (monthly): '+err.message,'err'); }
+      finally{ btn.disabled=false; }
+    });
   </script>
 </body>
 </html>
