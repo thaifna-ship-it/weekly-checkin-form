@@ -230,8 +230,8 @@
       loadCompanies();
     });
 
-    // 👉 4) Submit to Apps Script endpoint
-    form.addEventListener('submit', async (e)=>{
+   // 👉 4) Submit to Apps Script endpoint (debug friendly)
+form.addEventListener('submit', async (e)=>{
   e.preventDefault();
   setStatus('Submitting…', 'warn');
   const btn = form.querySelector('button[type="submit"]');
@@ -242,26 +242,30 @@
   try{
     const res = await fetch(ENDPOINT_SUBMIT, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ✅ เปลี่ยนจาก application/json
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // simple request
       body: JSON.stringify(payload)
     });
 
     const ct = res.headers.get('content-type') || '';
-    if (!res.ok || !ct.includes('application/json')) {
-      const text = await res.text();
-      throw new Error('Bad response: ' + text.slice(0,120));
-    }
+    const statusInfo = `HTTP ${res.status} • CT=${ct}`;
 
-    const json = await res.json();
-    if (json && json.ok) {
-      setStatus('Submitted ✓', 'ok');
-      form.reset();
+    // พยายามอ่าน JSON ก่อน ถ้าไม่ใช่ค่อยอ่านเป็น text
+    if (ct.includes('application/json')) {
+      const json = await res.json();
+      if (res.ok && json && json.ok) {
+        setStatus('Submitted ✓', 'ok');
+        form.reset();
+      } else {
+        const msg = json && (json.error || JSON.stringify(json));
+        setStatus(`Server error: ${msg} (${statusInfo})`, 'err');
+      }
     } else {
-      throw new Error(json.error || 'Submit failed');
+      const text = await res.text();
+      setStatus(`Non-JSON response: ${text.slice(0,180)}… (${statusInfo})`, 'err');
     }
   }catch(err){
+    setStatus(`Network error: ${err.message}`, 'err');
     console.error('Submit error:', err);
-    setStatus('Error: cannot submit (check endpoint URL / CORS)', 'err');
   }finally{
     btn.disabled = false;
   }
