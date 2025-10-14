@@ -49,191 +49,22 @@
           <option value="weekly" selected>Weekly</option>
           <option value="monthly">Monthly</option>
         </select>
+      </div>
+        <select id="modeSel" class="modeSel">
+          <option value="weekly" selected>Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
         <span id="status" class="status"></span>
       </div>
 
       <!-- WEEKLY FORM -->
-      <form id="formWeekly" class="full" autocomplete="off">
-        <div>
-          <label>Memo Date</label>
-          <input type="date" name="memoDate" required />
-        </div>
-        <div>
-          <label>Staff</label>
-          <input name="staff" list="staffList" placeholder="พิมพ์ชื่อพนักงาน" required />
-          <datalist id="staffList">
-            <option value="Wim"></option>
-            <option value="Cream"></option>
-            <option value="Fern"></option>
-            <option value="Tham"></option>
-          </datalist>
-        </div>
-
-        <div class="full">
-          <label>Company</label>
-          <input name="company" list="companyListW" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
-          <datalist id="companyListW"></datalist>
-          <div class="hint">รายชื่อบริษัทจะโหลดจาก Google Sheet (CustomerList)</div>
-        </div>
-
-        <div class="row">
-          <div>
-            <label>Relationship (0–5)</label>
-            <select name="relationship" required>
-              <option value="" disabled selected>เลือกคะแนน</option>
-              <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-            </select>
-            <div class="hint">0 = no contact • 5 = strong & cooperative</div>
-          </div>
-          <div>
-            <label>Proactiveness (0–5)</label>
-            <select name="proactiveness" required>
-              <option value="" disabled selected>เลือกคะแนน</option>
-              <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-            </select>
-            <div class="hint">0 = none • 5 = very proactive</div>
-          </div>
-        </div>
-
-        <div class="full">
-          <label>Key Activity This Week</label>
-          <textarea name="keyActivity" placeholder="เช่น ส่งบทความให้อนุมัติ / อัปโหลดสินค้า / โทรติดตาม"></textarea>
-        </div>
-
-        <div>
-          <label>Client Feedback</label>
-          <textarea name="clientFeedback" placeholder="เช่น ลูกค้าขอปรับคีย์เวิร์ด / ยังไม่ตอบกลับ"></textarea>
-        </div>
-        <div>
-          <label>Next Action</label>
-          <textarea name="nextAction" placeholder="สัปดาห์หน้าจะทำอะไรต่อ"></textarea>
-        </div>
-
-        <div>
-          <label>Summary Status</label>
-          <select name="summary" required>
-            <option value="" disabled selected>เลือกสถานะ</option>
-            <option value="Active">✅ Active</option>
-            <option value="Follow-up">⚠️ Need Follow‑up</option>
-            <option value="No Response">❌ No Response</option>
-          </select>
-        </div>
-        <div>
-          <label>Memo / Note</label>
-          <input name="memo" placeholder="บันทึกสั้น ๆ เพิ่มเติม (ถ้ามี)" />
-        </div>
-
-        <div class="full actions">
-          <button type="submit" class="btn primary">Submit Weekly</button>
-          <button type="button" id="saveDraftW" class="btn ghost">Save Draft (local)</button>
-        </div>
+      $1
+          <span id="statusW" class="status"></span>$2</div>
       </form>
 
       <!-- MONTHLY FORM -->
-      <form id="formMonthly" class="full" autocomplete="off" hidden>
-        <div>
-          <label>Month (YYYY-MM)</label>
-          <input type="month" name="ym" required />
-          <div class="hint">เลือกเดือนของรายงาน เช่น <code>2025-10</code> (หนึ่งบริษัทต่อหนึ่งรายงานต่อเดือน)</div>
-        </div>
-        <div>
-          <label>Staff</label>
-          <input name="staff" list="staffList" placeholder="พิมพ์ชื่อพนักงาน" required />
-          <div class="hint">ผู้รับผิดชอบหลักของลูกค้าในเดือนนี้</div>
-        </div>
-
-        <div class="full">
-          <label>Company</label>
-          <input name="company" list="companyListM" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
-          <datalist id="companyListM"></datalist>
-          <div class="hint">เลือกบริษัทที่ต้องการสรุปรายเดือน (โหลดจากชีท CustomerList)</div>
-        </div>
-
-        <div>
-          <label>Relationship (0–5) [Monthly]</label>
-          <select name="relationshipMonthly" required>
-            <option value="" disabled selected>เลือกคะแนน</option>
-            <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-          </select>
-          <div class="hint">0 = แทบไม่ตอบกลับ • 5 = สัมพันธ์ดีมาก</div>
-        </div>
-        <div>
-          <label>Proactiveness (0–5) [Monthly]</label>
-          <select name="proactivenessMonthly" required>
-            <option value="" disabled selected>เลือกคะแนน</option>
-            <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-          </select>
-          <div class="hint">0 = ไม่ขยับงาน • 5 = เชิงรุกมาก</div>
-        </div>
-
-        <div class="full">
-          <label>Listing Completeness <small>(สินค้าที่ลงบนเว็บไซต์ครบถ้วนหรือไม่ หรือ ขาดการลงไปมากกว่า 2 เดือน)</small></label>
-          <select name="listingCompleteness" required>
-            <option value="" disabled selected>เลือกสถานะ</option>
-            <option>Complete</option>
-            <option>Minor Gap (<2 months)</option>
-            <option>Major Gap (≥2 months)</option>
-          </select>
-          <div class="hint">Complete = ครบ • Minor Gap = ตกค้างเล็กน้อย • Major Gap = ขาด ≥ 2 เดือน</div>
-        </div>
-
-        <div>
-          <label>Knowledge Content Status</label>
-          <select name="knowledgeStatus" required>
-            <option value="" disabled selected>เลือกสถานะ</option>
-            <option>On Target</option>
-            <option>Behind (Client Approval Delay)</option>
-            <option>Behind (Internal)</option>
-            <option>Not Planned</option>
-          </select>
-          <div class="hint">สถานะบทความ/ความรู้ในเดือนนี้</div>
-        </div>
-        <div>
-          <label>Knowledge Pieces Done</label>
-          <input type="number" name="knowledgePieces" min="0" step="1" value="0" />
-          <div class="hint">จำนวนชิ้นงานที่เสร็จและเผยแพร่</div>
-        </div>
-        <div class="full">
-          <label>Knowledge Notes</label>
-          <textarea name="knowledgeNotes" placeholder="บันทึก/เหตุผล เช่น รออนุมัติจากลูกค้า"></textarea>
-        </div>
-
-        <div class="full">
-          <label>Other Ads Service (เลือกได้หลายข้อ)</label>
-          <div class="hint">เลือกบริการเสริมที่ทำในเดือนนี้ เช่น Facebook, Google Ads, Email</div>
-          <div class="checkboxes" id="adsGroup">
-            <label><input type="checkbox" value="Content Email"> Content Email</label>
-            <label><input type="checkbox" value="Facebook"> Facebook</label>
-            <label><input type="checkbox" value="Google Ads"> Google Ads</label>
-            <label><input type="checkbox" value="Line OA"> Line OA</label>
-            <label><input type="checkbox" value="Shopee/Lazada Boost"> Shopee/Lazada Boost</label>
-            <label><input type="checkbox" value="Other" id="adsOtherChk"> Other</label>
-          </div>
-          <input id="adsOtherText" placeholder="ระบุ Other (ถ้าเลือก)" style="margin-top:8px;display:none" />
-        </div>
-
-        <div class="full">
-          <label>Inquiry / Download</label>
-          <div class="checkline">
-            <input type="checkbox" id="inquiryDownloadChk" />
-            <span>มี Inquiry/Download ในเดือนนี้</span>
-          </div>
-          <div class="hint">ติ๊กถ้ามีการติดต่อสอบถามหรือดาวน์โหลดแคตตาล็อกในเดือนนี้</div>
-        </div>
-
-        <div class="full">
-          <label>Monthly Memo</label>
-          <textarea name="monthlyMemo" placeholder="สรุปภาพรวม/ไฮไลต์/ปัญหาหลักของเดือนนี้"></textarea>
-        </div>
-        <div class="full">
-          <label>Next Action (Next Month)</label>
-          <input name="nextActionNextMonth" placeholder="ภารกิจสำคัญเดือนถัดไป • เจ้าของงาน • เส้นตายโดยประมาณ" />
-        </div>
-
-        <div class="full actions">
-          <button type="submit" class="btn primary">Submit Monthly</button>
-          <button type="button" id="saveDraftM" class="btn ghost">Save Draft (local)</button>
-        </div>
+      $1
+          <span id="statusM" class="status"></span>$2</div>
       </form>
 
       <div class="footer">
@@ -252,12 +83,8 @@
     const modeBadge = document.getElementById('modeBadge');
     const formW     = document.getElementById('formWeekly');
     const formM     = document.getElementById('formMonthly');
-    const statusEl  = document.getElementById('status');
     const companyListW = document.getElementById('companyListW');
-    const companyListM = document.getElementById('companyListM');
-    const adsOtherChk = document.getElementById('adsOtherChk');
-    const adsOtherText = document.getElementById('adsOtherText');
-    const inquiryDownloadChk = document.getElementById('inquiryDownloadChk');
+    c
 
     function setStatus(msg, cls){ statusEl.textContent = msg; statusEl.className = 'status ' + (cls||''); }
 
