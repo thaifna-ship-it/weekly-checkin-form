@@ -85,7 +85,7 @@
           <label>Company</label>
           <input name="company" id="companyInput" list="companyListW" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" />
           <datalist id="companyListW"></datalist>
-          <div class="hint">รายชื่อบริษัทจะโหลดจาก Google Sheet (CustomerList)</div>
+          <div class="hint">รายชื่อบริษัทจะโหลดจาก Google Sheet (Company_master)</div>
         </div>
 
         <div class="full" id="otherTaskBlock" hidden>
@@ -94,7 +94,8 @@
           <div class="hint">ช่องนี้จะแสดงเมื่อเลือก Other task</div>
         </div>
 
-        <div class="full">
+                <div id="mainOnlyFields">
+<div class="full">
           <label>Today’s Focus (1–3 items)</label>
           <textarea name="todayFocus" placeholder="เช่น ปรับบทความบริษัท A / follow up บริษัท B / อัปโหลดสินค้า"></textarea>
           <div class="hint">เขียนสั้น ๆ เพื่อบังคับให้คิดก่อนลงมือทำ</div>
@@ -125,7 +126,9 @@
         <div class="full">
           <label>Memo / Note (optional)</label>
           <input name="memo" placeholder="บันทึกสั้น ๆ เพิ่มเติม (ถ้ามี)" />
-        </div>
+                </div>
+
+</div>
 
         <div class="full actions">
           <button type="submit" class="btn primary">Submit Daily</button>
@@ -151,7 +154,7 @@
           <label>Company</label>
           <input name="company" list="companyListM" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
           <datalist id="companyListM"></datalist>
-          <div class="hint">เลือกบริษัทที่ต้องการสรุปรายเดือน (โหลดจากชีท CustomerList)</div>
+          <div class="hint">เลือกบริษัทที่ต้องการสรุปรายเดือน (โหลดจากชีท Company_master)</div>
         </div>
 
         <div>
@@ -243,7 +246,7 @@
       </form>
 
       <div class="footer">
-        ตั้งค่า URL ในตัวแปร <code>ENDPOINT_SUBMIT</code> และ <code>ENDPOINT_LIST</code> ด้านล่าง • รายชื่อบริษัทอ่านจากชีท <b>CustomerList</b>
+        ตั้งค่า URL ในตัวแปร <code>ENDPOINT_SUBMIT</code> และ <code>ENDPOINT_LIST</code> ด้านล่าง • รายชื่อบริษัทอ่านจากชีท <b>Company_master</b>
       </div>
     </div>
   </div>
@@ -272,22 +275,37 @@
     const otherTaskBlock = document.getElementById('otherTaskBlock');
     const otherTaskDetail = document.getElementById('otherTaskDetail');
 
+    const mainOnlyFields = document.getElementById('mainOnlyFields');
+
     function setStatus(el, msg, cls){ if(!el) return; el.textContent = msg || ''; el.className = 'status ' + (cls||''); }
 
 
     function applyTaskTypeUI(){
       const t = taskTypeSel?.value || 'main';
       const isMain = t === 'main';
+
+      // show/hide blocks
       if (companyBlock) companyBlock.hidden = !isMain;
       if (otherTaskBlock) otherTaskBlock.hidden = isMain;
+      if (mainOnlyFields) mainOnlyFields.hidden = !isMain;
 
       // required logic
       if (companyInput) companyInput.required = isMain;
       if (otherTaskDetail) otherTaskDetail.required = !isMain;
 
       // clear irrelevant fields
-      if (!isMain && companyInput) companyInput.value = '';
-      if (isMain && otherTaskDetail) otherTaskDetail.value = '';
+      if (!isMain){
+        if (companyInput) companyInput.value = '';
+        // main-only fields
+        if (formD?.elements){
+          if (formD.elements['todayFocus']) formD.elements['todayFocus'].value = '';
+          if (formD.elements['actualToday']) formD.elements['actualToday'].value = '';
+          if (formD.elements['clientFeedback']) formD.elements['clientFeedback'].value = '';
+          if (formD.elements['memo']) formD.elements['memo'].value = '';
+        }
+      } else {
+        if (otherTaskDetail) otherTaskDetail.value = '';
+      }
     }
 
     // Toggle Other text input
