@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Customer Check-in • Weekly & Monthly</title>
+  <title>Daily Work Log • Daily & Monthly</title>
   <style>
     :root{--bg:#0f172a;--card:#111827;--muted:#334155;--border:#1f2937;--fg:#e5e7eb;--acc:#22c55e;--warn:#f59e0b;--err:#ef4444}
     html,body{background:#0b1220;color:var(--fg);font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial}
@@ -39,26 +39,26 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Customer Check-in</h1>
-      <p class="desc">กรอกสรุปความคืบหน้าของลูกค้า • เลือกโหมด Weekly / Monthly จากเมนูด้านล่าง</p>
+      <h1>Daily Work Log</h1>
+      <p class="desc">บันทึกงานประจำวัน + วางแผนสำหรับวันถัดไป • ใช้เวลาไม่เกิน 5 นาที</p>
 
       <div class="toprow">
-        <div class="pill">🧭 Mode: <b id="modeBadge">Weekly</b></div>
+        <div class="pill">🧭 Mode: <b id="modeBadge">Daily</b></div>
         <select id="modeSel" class="modeSel">
-          <option value="weekly" selected>Weekly</option>
+          <option value="daily" selected>Daily</option>
           <option value="monthly">Monthly</option>
         </select>
       </div>
 
-      <!-- WEEKLY FORM -->
-      <form id="formWeekly" class="full" autocomplete="off">
+      <!-- DAILY FORM -->
+      <form id="formDaily" class="full" autocomplete="off">
         <div class="full">
-          <label>Weekly</label>
-          <div class="hint">ฟอร์มรายสัปดาห์</div>
+          <label>Daily</label>
+          <div class="hint">กรอกวันละครั้งก่อนเลิกงาน เพื่อสรุปสิ่งที่ทำวันนี้และวางแผนพรุ่งนี้</div>
         </div>
 
         <div>
-          <label>Memo Date</label>
+          <label>Date</label>
           <input type="date" name="memoDate" required />
         </div>
         <div>
@@ -73,63 +73,64 @@
         </div>
 
         <div class="full">
+          <label>Task Type</label>
+          <select name="taskType" id="taskTypeSel" required>
+            <option value="main" selected>Mainly task (งานหลักที่ผูกกับบริษัท)</option>
+            <option value="other">Other task (งานทั่วไป / งานรอง)</option>
+          </select>
+          <div class="hint">เลือกประเภทงานก่อน: ถ้าเป็น Main จะเลือกบริษัท • ถ้าเป็น Other ให้บันทึกงานทั่วไปแทน</div>
+        </div>
+
+        <div class="full" id="companyBlock">
           <label>Company</label>
-          <input name="company" list="companyListW" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" required />
+          <input name="company" id="companyInput" list="companyListW" placeholder="พิมพ์หรือเลือกชื่อลูกค้า" />
           <datalist id="companyListW"></datalist>
           <div class="hint">รายชื่อบริษัทจะโหลดจาก Google Sheet (CustomerList)</div>
         </div>
 
-        <div class="row">
-          <div>
-            <label>Relationship (0–5)</label>
-            <select name="relationship" required>
-              <option value="" disabled selected>เลือกคะแนน</option>
-              <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-            </select>
-            <div class="hint">0 = no contact • 5 = strong & cooperative</div>
-          </div>
-          <div>
-            <label>Proactiveness (0–5)</label>
-            <select name="proactiveness" required>
-              <option value="" disabled selected>เลือกคะแนน</option>
-              <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-            </select>
-            <div class="hint">0 = none • 5 = very proactive</div>
-          </div>
+        <div class="full" id="otherTaskBlock" hidden>
+          <label>Other task detail</label>
+          <textarea name="otherTaskDetail" id="otherTaskDetail" placeholder="บันทึกงานทั่วไป/งานรอง เช่น งานเอกสารภายใน / ประชุม / ช่วยทีม / งานแทรก"></textarea>
+          <div class="hint">ช่องนี้จะแสดงเมื่อเลือก Other task</div>
         </div>
 
         <div class="full">
-          <label>Key Activity This Week</label>
-          <textarea name="keyActivity" placeholder="เช่น ส่งบทความให้อนุมัติ / อัปโหลดสินค้า / โทรติดตาม"></textarea>
+          <label>Today’s Focus (1–3 items)</label>
+          <textarea name="todayFocus" placeholder="เช่น ปรับบทความบริษัท A / follow up บริษัท B / อัปโหลดสินค้า"></textarea>
+          <div class="hint">เขียนสั้น ๆ เพื่อบังคับให้คิดก่อนลงมือทำ</div>
         </div>
 
-        <div>
-          <label>Client Feedback</label>
-          <textarea name="clientFeedback" placeholder="เช่น ลูกค้าขอปรับคีย์เวิร์ด / ยังไม่ตอบกลับ"></textarea>
-        </div>
-        <div>
-          <label>Next Action</label>
-          <textarea name="nextAction" placeholder="สัปดาห์หน้าจะทำอะไรต่อ"></textarea>
+        <div class="full">
+          <label>What I did today (Actual)</label>
+          <textarea name="actualToday" placeholder="สรุปสิ่งที่ทำวันนี้ (สั้น ๆ) เช่น ส่งบทความให้อนุมัติ / โทรติดตาม / แก้ SEO"></textarea>
         </div>
 
-        <div>
-          <label>Summary Status</label>
-          <select name="summary" required>
-            <option value="" disabled selected>เลือกสถานะ</option>
-            <option value="Active">✅ Active</option>
-            <option value="Follow-up">⚠️ Need Follow-up</option>
-            <option value="No Response">❌ No Response</option>
-          </select>
+        <div class="full">
+          <label>Client Feedback / Status</label>
+          <textarea name="clientFeedback" placeholder="เช่น ลูกค้าขอปรับคีย์เวิร์ด / รออนุมัติ / ยังไม่ตอบกลับ"></textarea>
         </div>
-        <div>
-          <label>Memo / Note</label>
+
+        <div class="full">
+          <label>Blocker / Need Support</label>
+          <textarea name="blocker" placeholder="ถ้ามีปัญหา/ติดขัด หรืออยากขอ support ให้เขียนที่นี่"></textarea>
+          <div class="hint">หัวหน้าทีมจะติดตามจากช่องนี้เป็นหลัก</div>
+        </div>
+
+        <div class="full">
+          <label>Plan for Tomorrow</label>
+          <textarea name="planTomorrow" placeholder="พรุ่งนี้จะทำอะไรต่อ / บริษัทไหน / สิ่งที่ต้องปิดให้จบ"></textarea>
+        </div>
+
+
+        <div class="full">
+          <label>Memo / Note (optional)</label>
           <input name="memo" placeholder="บันทึกสั้น ๆ เพิ่มเติม (ถ้ามี)" />
         </div>
 
         <div class="full actions">
-          <button type="submit" class="btn primary">Submit Weekly</button>
-          <button type="button" id="saveDraftW" class="btn ghost">Save Draft (local)</button>
-          <span id="statusW" class="status"></span>
+          <button type="submit" class="btn primary">Submit Daily</button>
+          <button type="button" id="saveDraftD" class="btn ghost">Save Draft (local)</button>
+          <span id="statusD" class="status"></span>
         </div>
       </form>
 
@@ -255,17 +256,39 @@
     // Elements
     const modeSel   = document.getElementById('modeSel');
     const modeBadge = document.getElementById('modeBadge');
-    const formW     = document.getElementById('formWeekly');
+    const formD     = document.getElementById('formDaily');
     const formM     = document.getElementById('formMonthly');
     const companyListW = document.getElementById('companyListW');
     const companyListM = document.getElementById('companyListM');
     const adsOtherChk = document.getElementById('adsOtherChk');
     const adsOtherText = document.getElementById('adsOtherText');
     const inquiryDownloadChk = document.getElementById('inquiryDownloadChk');
-    const statusW = document.getElementById('statusW');
+    const statusD = document.getElementById('statusD');
     const statusM = document.getElementById('statusM');
 
+    const taskTypeSel = document.getElementById('taskTypeSel');
+    const companyBlock = document.getElementById('companyBlock');
+    const companyInput = document.getElementById('companyInput');
+    const otherTaskBlock = document.getElementById('otherTaskBlock');
+    const otherTaskDetail = document.getElementById('otherTaskDetail');
+
     function setStatus(el, msg, cls){ if(!el) return; el.textContent = msg || ''; el.className = 'status ' + (cls||''); }
+
+
+    function applyTaskTypeUI(){
+      const t = taskTypeSel?.value || 'main';
+      const isMain = t === 'main';
+      if (companyBlock) companyBlock.hidden = !isMain;
+      if (otherTaskBlock) otherTaskBlock.hidden = isMain;
+
+      // required logic
+      if (companyInput) companyInput.required = isMain;
+      if (otherTaskDetail) otherTaskDetail.required = !isMain;
+
+      // clear irrelevant fields
+      if (!isMain && companyInput) companyInput.value = '';
+      if (isMain && otherTaskDetail) otherTaskDetail.value = '';
+    }
 
     // Toggle Other text input
     adsOtherChk?.addEventListener('change', ()=>{
@@ -273,14 +296,17 @@
       if (!adsOtherChk.checked) adsOtherText.value = '';
     });
 
+    // Task type toggle (Daily)
+    taskTypeSel?.addEventListener('change', applyTaskTypeUI);
+
     // Mode switch
     modeSel.addEventListener('change', ()=>{
       const m = modeSel.value;
       modeBadge.textContent = m.charAt(0).toUpperCase() + m.slice(1);
       const isMonthly = m === 'monthly';
       formM.hidden = !isMonthly;
-      formW.hidden = isMonthly;
-      setStatus(statusW,'',''); setStatus(statusM,'','');
+      formD.hidden = isMonthly;
+      setStatus(statusD,'',''); setStatus(statusM,'','');
     });
 
     // Init Month default + load companies + drafts
@@ -290,8 +316,16 @@
         const d = new Date();
         ymInput.value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
       }
+
+      // Set Daily date default (today)
+      const dateInput = formD.elements['memoDate'];
+      if (dateInput && !dateInput.value) {
+        const d2 = new Date();
+        dateInput.value = d2.toISOString().slice(0,10);
+      }
       loadCompanies();
       loadDrafts();
+      applyTaskTypeUI();
     });
 
     // Load company list (cache)
@@ -309,10 +343,10 @@
         const names = Array.isArray(json.names) ? [...new Set(json.names)].sort((a,b)=>a.localeCompare(b)) : [];
         localStorage.setItem(CACHE_KEY, JSON.stringify(names));
         renderCompanyOptions(names, true);
-        setStatus(statusW,'Loaded company list ✓','ok'); setStatus(statusM,'Loaded company list ✓','ok');
+        setStatus(statusD,'Loaded company list ✓','ok'); setStatus(statusM,'Loaded company list ✓','ok');
       }catch(err){
         console.error('loadCompanies failed:', err);
-        setStatus(statusW,'Warning: cannot load company list (cache used)','warn');
+        setStatus(statusD,'Warning: cannot load company list (cache used)','warn');
         setStatus(statusM,'Warning: cannot load company list (cache used)','warn');
       }
     }
@@ -328,10 +362,10 @@
     }
 
     // Drafts
-    document.getElementById('saveDraftW').addEventListener('click', ()=>{
-      const data = Object.fromEntries(new FormData(formW).entries());
-      localStorage.setItem('weekly-checkin-draft', JSON.stringify(data));
-      setStatus(statusW,'Weekly draft saved ✓','ok');
+    document.getElementById('saveDraftD').addEventListener('click', ()=>{
+      const data = Object.fromEntries(new FormData(formD).entries());
+      localStorage.setItem('daily-worklog-draft-v1', JSON.stringify(data));
+      setStatus(statusD,'Daily draft saved ✓','ok');
     });
     document.getElementById('saveDraftM').addEventListener('click', ()=>{
       const data = Object.fromEntries(new FormData(formM).entries());
@@ -342,8 +376,9 @@
       setStatus(statusM,'Monthly draft saved ✓','ok');
     });
     function loadDrafts(){
-      const rw = localStorage.getItem('weekly-checkin-draft');
-      if (rw) { try{ const d=JSON.parse(rw); for(const k in d){ if(formW[k]) formW[k].value=d[k]; } }catch(_){} }
+      const rw = localStorage.getItem('daily-worklog-draft-v1');
+      if (rw) { try{ const d=JSON.parse(rw); for(const k in d){ if(formD[k]) formD[k].value=d[k]; } }catch(_){} }
+      applyTaskTypeUI();
       const rm = localStorage.getItem('monthly-report-draft-v1');
       if (rm) { try{ const d=JSON.parse(rm); for(const k in d){ if(formM[k] && typeof d[k]==='string') formM[k].value=d[k]; }
         inquiryDownloadChk.checked = !!d.inquiryDownload;
@@ -371,13 +406,18 @@
       return json;
     }
 
-    formW.addEventListener('submit', async (e)=>{
-      e.preventDefault(); setStatus(statusW,'Submitting…','warn');
-      const btn = formW.querySelector('button[type="submit"]'); btn.disabled = true;
-      const payload = Object.fromEntries(new FormData(formW).entries());
-      payload.mode = 'weekly';
-      try{ await postJsonSimple(ENDPOINT_SUBMIT, payload); setStatus(statusW,'Submitted ✓','ok'); formW.reset(); }
-      catch(err){ console.error(err); setStatus(statusW,'Error: '+err.message,'err'); }
+    formD.addEventListener('submit', async (e)=>{
+      e.preventDefault(); setStatus(statusD,'Submitting…','warn');
+      const btn = formD.querySelector('button[type="submit"]'); btn.disabled = true;
+      const payload = Object.fromEntries(new FormData(formD).entries());
+      payload.mode = 'daily';
+      try{ await postJsonSimple(ENDPOINT_SUBMIT, payload); setStatus(statusD,'Submitted ✓','ok'); formD.reset();
+        // reset defaults
+        const d2 = new Date(); formD.memoDate.value = d2.toISOString().slice(0,10);
+        if (taskTypeSel) taskTypeSel.value = 'main';
+        applyTaskTypeUI();
+      }
+      catch(err){ console.error(err); setStatus(statusD,'Error: '+err.message,'err'); }
       finally{ btn.disabled=false; }
     });
 
